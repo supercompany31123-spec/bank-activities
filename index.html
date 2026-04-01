@@ -29,17 +29,10 @@
         .platform-name { font-size: 1.2em; color: #667eea; margin-bottom: 15px; font-weight: bold; }
         .activity { background: #f8f9fa; border-radius: 12px; padding: 18px; margin-bottom: 15px; border-left: 4px solid #667eea; }
         .activity-title { font-weight: bold; font-size: 1.05em; color: #333; margin-bottom: 10px; }
-        .activity-info { display: flex; flex-direction: column; gap: 4px; font-size: 0.9em; color: #555; }
-        .activity-info span { display: block; line-height: 1.5; }
+        .activity-info { display: flex; flex-direction: column; gap: 6px; font-size: 0.9em; color: #555; }
+        .activity-info span { display: block; line-height: 1.4; }
         .label { font-weight: bold; color: #333; }
-        .sub-activity { background: #f0f4f8; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; border-left: 3px solid #3498db; }
-        .sub-activity-name { font-weight: bold; color: #2980b9; font-size: 0.95em; margin-bottom: 6px; }
-        .tier-row { display: flex; gap: 12px; padding: 3px 0; border-bottom: 1px dashed #e0e0e0; }
-        .tier-row:last-child { border-bottom: none; }
-        .cond { font-size: 0.85em; color: #888; }
         .tag { display: inline-block; background: #667eea; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; margin-right: 5px; }
-        .tag-red { display: inline-block; background: #e74c3c; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; margin-right: 5px; }
-        .label-inline { font-size: 0.85em; color: #555; margin-right: 8px; }
         .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 0.85em; }
         .hidden { display: none !important; }
         @media (max-width: 768px) { .container { flex-direction: column; } .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #eee; } }
@@ -51,7 +44,7 @@
             <h3>📅 選擇月份</h3>
             <select class="month-select" id="monthSelect" onchange="filterByMonth()">
                 <option value="2026-04" selected>2026年4月（最新）</option>
-                <option value="2026-03">2026年3月</option>
+                
             </select>
             <h3>🏷️ 篩選電商平台</h3>
             <div class="filter-group">
@@ -74,165 +67,53 @@
                 
                 <div class="bank-section" data-bank="esun">
                     <div class="bank-title"><span class="bank-icon">🏦</span>玉山銀行</div>
-                    <div class="platform" data-platform="shopee"><div class="platform-name">🦐 蝦皮購物</div><div class="activity">
-    <div class="activity-title">蝦皮購物4月網購活動 <span class="tag-red">分期：❌</span> </div>
-    <div class="activity-info"><div class="sub-activity">
-        <div class="sub-activity-name">活動一</div>
-        <div class="tier-row">
-            <span><span class="label">門檻：</span>5,000元</span>
-            <span><span class="label">回饋：</span>300元刷卡金</span>
-          </div>
-      </div><div class="sub-activity">
-        <div class="sub-activity-name">活動二</div>
-        <div class="tier-row">
-            <span><span class="label">門檻：</span>12,000元</span>
-            <span><span class="label">回饋：</span>700點</span>
-          </div><div class="tier-row">
-            <span><span class="label">門檻：</span>25,000元</span>
-            <span><span class="label">回饋：</span>1,500點</span>
-          </div>
-      </div><div class="sub-activity">
-        <div class="sub-activity-name">活動四</div>
-        <div class="tier-row">
-            <span><span class="label">門檻：</span>15,000元</span>
-            <span><span class="label">回饋：</span>1,000點</span>
-          </div><div class="tier-row">
-            <span><span class="label">門檻：</span>30,000元</span>
-            <span><span class="label">回饋：</span>2,000點</span>
-          </div><div class="tier-row">
-            <span><span class="label">門檻：</span>2,000元</span>
-            <span><span class="label">回饋：</span>100點</span>
-          </div>
-      </div>
-      <span><span class="label">消費區間：</span>2026/4/1 ~ 2026/4/30</span>
-      
-      <span><span class="label">限量 6,000 名</span></span>
-    </div>
-  </div></div><div class="platform" data-platform="momo"><div class="platform-name">🛍️ momo購物</div><div class="activity">
-    <div class="activity-title">momo 購物4月網購活動 <span class="tag-red">分期：❌</span> <span class="tag-red">不可疊加</span></div>
-    <div class="activity-info"><div class="sub-activity">
-        <div class="sub-activity-name">玉山卡機車館限定</div>
-        <div class="tier-row">
-            <span><span class="label">門檻：</span>60,000元</span>
-            <span><span class="label">回饋：</span>6,500元</span>
-          </div>
-      </div><div class="sub-activity">
-        <div class="sub-activity-name">活動一</div>
-        <div class="tier-row">
-            <span><span class="label">門檻：</span>6,000元</span>
-            <span><span class="label">回饋：</span>5%(上限500元)刷卡金</span>
-          </div>
-      </div><div class="sub-activity">
-        <div class="sub-activity-name">活動二</div>
-        <div class="tier-row">
-            <span><span class="label">門檻：</span>15,000元</span>
-            <span><span class="label">回饋：</span>1,000點</span>
-          </div><div class="tier-row">
-            <span><span class="label">門檻：</span>30,000元</span>
-            <span><span class="label">回饋：</span>2,000點</span>
-          </div>
-      </div><div class="sub-activity">
-        <div class="sub-activity-name">活動三</div>
-        <div class="tier-row">
-            <span><span class="label">門檻：</span>12,000元</span>
-            <span><span class="label">回饋：</span>600點</span>
-          </div><div class="tier-row">
-            <span><span class="label">門檻：</span>24,000元</span>
-            <span><span class="label">回饋：</span>1,500點</span>
-          </div>
-      </div><div class="sub-activity">
-        <div class="sub-activity-name">活動四</div>
-        <div class="tier-row">
-            <span><span class="label">門檻：</span>3,000元</span>
-            <span><span class="label">回饋：</span>200點</span>
-          </div>
-      </div>
-      <span><span class="label">消費區間：</span>2026/4/1 ~ 2026/4/30</span>
-      <span><span class="label">登錄：</span>4/30 13:00（限量 120 名）</span>
-      
-    </div>
-  </div></div><div class="platform" data-platform="coupang"><div class="platform-name">🚀 酷澎 Coupang</div><div class="activity">
-    <div class="activity-title">酷澎Coupang 4月網購活動 <span class="tag-red">分期：❌</span> </div>
-    <div class="activity-info"><div class="sub-activity">
-        <div class="sub-activity-name">活動一</div>
-        <div class="tier-row">
-            <span><span class="label">門檻：</span>20,000元</span>
-            <span><span class="label">回饋：</span>現折1,100元</span>
-          </div>
-      </div><div class="sub-activity">
-        <div class="sub-activity-name">活動二</div>
-        <div class="tier-row">
-            <span><span class="label">門檻：</span>2,500元</span>
-            <span><span class="label">回饋：</span>100點</span>
-          </div><div class="tier-row">
-            <span><span class="label">門檻：</span>5,000元</span>
-            <span><span class="label">回饋：</span>250點</span>
-          </div>
-      </div><div class="sub-activity">
-        <div class="sub-activity-name">活動三</div>
-        <div class="tier-row">
-            <span><span class="label">門檻：</span>2,000元</span>
-            <span><span class="label">回饋：</span>現折80元</span>
-          </div>
-      </div>
-      <span><span class="label">消費區間：</span>2026/4/1 ~ 2026/4/30</span>
-      <span><span class="label">登錄：</span>4/25 13:00（限量 1,500 名）</span>
-      
-    </div>
-  </div></div>
+                    <div class="platform" data-platform="shopee"><div class="platform-name">🦐 蝦皮購物</div><div class="activity"><div class="activity-title">⚠️ 無活動</div><div class="activity-info"><span>本月無蝦皮相關活動</span></div></div></div><div class="platform" data-platform="momo"><div class="platform-name">🛍️ momo購物</div><div class="activity">
+        <div class="activity-title">momo 購物4月網購活動 <span class="tag">需分期</span></div>
+        <div class="activity-info">
+          <span><span class="label">消費區間：</span>2026/4/1 ~ 2026/4/30</span>
+          <span><span class="label">門檻：</span>4,350元</span><span><span class="label">回饋：</span>【玉山卡機車館限定】最高享9,400元回饋</span><span><span class="label">門檻：</span>1,500元</span><span><span class="label">回饋：</span>刷玉山Unicard最高享9,400元回饋 (試算詳下方說明)。</span><span><span class="label">回饋：</span>※ momo會員須持本人之玉山銀行信用卡進行消費始享回饋 (玉山信用卡持卡人與momo購物網帳戶註冊</span><span><span class="label">回饋：</span>※ 玉山U Bear信用卡網購分期享加碼2% (上限150元)。>>活動詳情</span><span><span class="label">回饋：</span>※ 玉山Unicard分期消費享2%~3.5%回饋 (上限5,000點)。>>活動詳情</span><span><span class="label">門檻：</span>2,元</span><span><span class="label">回饋：</span>【活動一】全月活動，最高享22.8%回饋</span><span><span class="label">門檻：</span>500元</span><span><span class="label">回饋：</span>刷玉山Unicard最高享1,370元回饋 (22.8%回饋，試算詳下方說明)。</span><span><span class="label">回饋：</span>※ 本活動適用一次付清及分期付款消費。</span><span><span class="label">回饋：</span>※ 本活動限量登錄3,000名，限正卡人登錄，正、附卡消費合併計算，每歸戶擇優回饋1次，最高回饋上限</span><span><span class="label">回饋：</span>※ 玉山U Bear信用卡網購分期享加碼2% (上限150元)。>>活動詳情</span><span><span class="label">回饋：</span>※ 玉山Unicard分期消費享2%~3.5%回饋 (上限5,000點)。>>活動詳情</span><span><span class="label">門檻：</span>270元</span><span><span class="label">回饋：</span>【活動二】同樂購物節，最高享4,350元回饋</span><span><span class="label">門檻：</span>1元</span><span><span class="label">門檻：</span>1元</span><span><span class="label">回饋：</span>刷玉山Unicard分期最高享4,350元回饋 (試算詳下方說明)。</span><span><span class="label">回饋：</span>※ 本活動限量登錄1,500名，限正卡人登錄，正、附卡消費合併計算，每歸戶擇優回饋1次，最高回饋上限</span><span><span class="label">回饋：</span>※ 玉山U Bear信用卡網購分期享加碼2% (上限150元)。>>活動詳情</span><span><span class="label">回饋：</span>※ 玉山Unicard分期消費享2%~3.5%回饋 (上限5,000點)。>>活動詳情</span><span><span class="label">門檻：</span>800元</span><span><span class="label">門檻：</span>800元</span><span><span class="label">回饋：</span>【活動三】桃金日最高享3,640元回饋</span><span><span class="label">門檻：</span>1元</span><span><span class="label">門檻：</span>1元</span><span><span class="label">回饋：</span>刷玉山Unicard分期最高享3,640元回饋 (試算詳下方說明)。</span><span><span class="label">回饋：</span>※ 本活動限量登錄1,200名，限正卡人登錄，正、附卡消費合併計算，每歸戶擇優回饋1次，最高回饋上限</span><span><span class="label">回饋：</span>※ 玉山U Bear信用卡網購分期享加碼2% (上限150元)。>>活動詳情</span><span><span class="label">回饋：</span>※ 玉山Unicard分期消費享2%~3.5%回饋 (上限5,000點)。>>活動詳情</span><span><span class="label">門檻：</span>800元</span><span><span class="label">門檻：</span>800元</span><span><span class="label">回饋：</span>【活動四】mo店+限定，最高享19%回饋</span><span><span class="label">門檻：</span>3,000元</span><span><span class="label">回饋：</span>200點</span><span><span class="label">回饋：</span>刷玉山Unicard最高享19%回饋 (試算詳下方說明)。</span><span><span class="label">回饋：</span>※ 限mo店+消費才可參與活動，適用一次付清及分期付款消費。</span><span><span class="label">回饋：</span>※ 限量登錄2,000名，限正卡人登錄，正、附卡消費合併計算，最高回饋200點玉山e point。</span><span><span class="label">回饋：</span>※ 玉山Unicard最高享4.5%回饋。>>活動詳情</span><span><span class="label">門檻：</span>135元</span><span><span class="label">門檻：</span>1,500元</span><span><span class="label">門檻：</span>5,000元</span><span><span class="label">回饋：</span>500點</span><span><span class="label">門檻：</span>5,000元</span><span><span class="label">回饋：</span>500點</span><span><span class="label">回饋：</span>符合回饋資格者，刷卡金及mo幣統一於2026年6月中旬後陸續回饋於玉山正卡人信用卡帳戶及momo帳戶</span><span><span class="label">回饋：</span>本活動需下載玉山Wallet並註冊成功方可享有刷卡金回饋。</span><span><span class="label">回饋：</span>玉山U Bear信用卡網購分期享加碼2% (上限150元)。</span><span><span class="label">回饋：</span>玉山Unicard分期消費享加碼玉山e point：簡單選 2% (上限1,000點) / 任意選 </span><span><span class="label">回饋：</span>限量登錄3,000名，限正卡人登錄，正、附卡消費合併計算。符合活動資格者，統一於2026年6月中旬後</span><span><span class="label">回饋：</span>玉山U Bear信用卡網購分期享加碼2% (上限150元)。</span><span><span class="label">回饋：</span>玉山Unicard分期消費享加碼玉山e point：簡單選 2% (上限1,000點) / 任意選 </span><span><span class="label">回饋：</span>限量登錄1,500名，限正卡人登錄，正、附卡消費合併計算。符合活動資格者，統一於2026年6月中旬後</span><span><span class="label">回饋：</span>玉山U Bear信用卡網購分期享加碼2% (上限150元)。</span><span><span class="label">回饋：</span>玉山Unicard分期消費享加碼玉山e point：簡單選 2% (上限1,000點) / 任意選 </span><span><span class="label">回饋：</span>玉山U Bear信用卡網購分期享加碼2% (上限150元)。</span><span><span class="label">回饋：</span>玉山Unicard分期消費享加碼玉山e point：簡單選 2% (上限1,000點) / 任意選 </span><span><span class="label">回饋：</span>限mo店+消費才可參與活動，適用一次付清及分期付款消費。</span><span><span class="label">回饋：</span>玉山U Bear信用卡網購分期享加碼2% (上限150元)。</span><span><span class="label">回饋：</span>訂閱玉山Unicard【 UP選】方案最高享4.5%回饋，活動詳情</span><span><span class="label">回饋：</span>【玉山Unicard新申辦加碼】最高享22.5%</span><span><span class="label">門檻：</span>5,000元</span><span><span class="label">回饋：</span>500點</span><span><span class="label">回饋：</span>本活動限正卡，且限一般消費不含儲值卡自動加值、eTag自動儲值、各類預借現金、餘額代償、查核 (定)</span><span><span class="label">回饋：</span>辦理分期交易不享卡片基本回饋，各卡基本回饋依本行各卡片活動說明為準。</span><span><span class="label">回饋：</span>分期交易以該筆總金額計算回饋1次。</span><span><span class="label">回饋：</span>分期零利率產品：零手續費，零總費用年百分率。</span><span><span class="label">回饋：</span>◎分期零利率產品：零手續費、零總費用年百分率◎循環利率：5.88%~15%(依本行電腦評等而訂，基準</span>
+          
+          <span><span class="label">分期：</span>✅ 可</span>
+        </div>
+      </div></div><div class="platform" data-platform="coupang"><div class="platform-name">🚀 酷澎 Coupang</div><div class="activity">
+        <div class="activity-title">酷澎Coupang 4月網購活動 <span class="tag">需分期</span></div>
+        <div class="activity-info">
+          <span><span class="label">消費區間：</span>2026/4/1 ~ 2026/4/30</span>
+          <span><span class="label">門檻：</span>2,750元</span><span><span class="label">門檻：</span>1,100元</span><span><span class="label">回饋：</span>※ 本活動限酷澎WOW會員參加，適用一次付清及單筆分期。活動期間每一酷澎會員帳號限抵用1次，優惠限量</span><span><span class="label">回饋：</span>※ 玉山Unicard分期消費仍享加碼：簡單選2% (上限1,000點) / 任意選2.5% (上限</span><span><span class="label">門檻：</span>100元</span><span><span class="label">門檻：</span>250元</span><span><span class="label">門檻：</span>250元</span><span><span class="label">回饋：</span>※ 玉山Unicard分期消費仍享加碼：簡單選2% (上限1,000點) / 任意選2.5% (上限</span><span><span class="label">門檻：</span>80元</span><span><span class="label">回饋：</span>※ 本活動適用一次付清及單筆分期，每週一00:00發放優惠券，每週每一酷澎會員帳號限抵用1次，單筆折</span><span><span class="label">門檻：</span>5,000元</span><span><span class="label">回饋：</span>500點</span><span><span class="label">回饋：</span>【同場加映】玉山Pi拍錢包信用卡最高享3%回饋</span><span><span class="label">門檻：</span>1,000元</span><span><span class="label">回饋：</span>單筆折抵上限1,100元，活動期間每一酷澎會員帳號限抵用1次，依結帳順序抵用，抵用完畢為止。</span><span><span class="label">回饋：</span>本活動限於酷澎刷玉山銀行信用卡消費，活動期間每週一00:00發放現折80元抵用券，單筆折抵上限80元</span><span><span class="label">門檻：</span>500元</span><span><span class="label">回饋：</span>分期零利率產品：零手續費，零總費用年百分率。</span><span><span class="label">回饋：</span>◎分期零利率產品：零手續費、零總費用年百分率◎循環利率：5.88%~15%(依本行電腦評等而訂，基準</span>
+          
+          <span><span class="label">分期：</span>✅ 可</span>
+        </div>
+      </div></div>
                 </div>
                 <div class="bank-section" data-bank="cathay">
                     <div class="bank-title"><span class="bank-icon">💳</span>國泰世華銀行</div>
                     <div class="platform" data-platform="shopee"><div class="platform-name">🦐 蝦皮購物</div><div class="activity">
-    <div class="activity-title">蝦皮購物 4月狂購盛典(4/5~4/18) <span class="tag">分期：✅</span> </div>
-    <div class="activity-info"><div class="tier-row">
-          <span><span class="label">門檻：</span>10,000元<span class="cond">(一次付清及分期皆可)</span></span>
-          <span><span class="label">回饋：</span>500點</span>
-        </div><div class="tier-row">
-          <span><span class="label">門檻：</span>25,000元<span class="cond">(分期專屬)</span></span>
-          <span><span class="label">回饋：</span>2,000點</span>
+        <div class="activity-title">蝦皮購物 4月狂購盛典(4/5~4/18) <span class="tag">需分期</span></div>
+        <div class="activity-info">
+          <span><span class="label">消費區間：</span>2026/04/05 ~ 2026/04/18</span>
+          <span><span class="label">門檻：</span>10,000元</span><span><span class="label">回饋：</span>500點</span><span><span class="label">門檻：</span>25,000元</span><span><span class="label">回饋：</span>2,000點</span>
+          <span><span class="label">登錄：</span>04/21 - 04/30（限量 1,000 名）</span>
+          
+          <span><span class="label">分期：</span>✅ 可</span>
         </div>
-      <span><span class="label">消費區間：</span>2026/04/05 ~ 2026/04/18</span>
-      <span><span class="label">登錄：</span>04/21 - 04/30（限量 1,000 名）</span>
-      
-    </div>
-  </div><div class="activity">
-    <div class="activity-title">蝦皮購物聯名卡加碼 <span class="tag">分期：✅</span> </div>
-    <div class="activity-info"><div class="tier-row">
-          <span><span class="label">門檻：</span>6,500元<span class="cond">(一次付清及分期皆可)</span></span>
-          <span><span class="label">回饋：</span>650蝦幣</span>
+      </div><div class="activity">
+        <div class="activity-title">蝦皮購物聯名卡加碼 <span class="tag">需分期</span></div>
+        <div class="activity-info">
+          <span><span class="label">消費區間：</span>2026/04/01 ~ 2026/04/30</span>
+          <span><span class="label">門檻：</span>6,500元</span><span><span class="label">回饋：</span>650蝦幣</span>
+          <span><span class="label">登錄：</span>4/20 - 23:59（限量 1,500 名）</span>
+          
+          <span><span class="label">分期：</span>✅ 可</span>
         </div>
-      <span><span class="label">消費區間：</span>2026/04/01 ~ 2026/04/30</span>
-      <span><span class="label">登錄：</span>4/20 - 23:59（限量 1,500 名）</span>
-      
-    </div>
-  </div><div class="activity">
-    <div class="activity-title">蝦皮購物4月購物嘉年華 (4/1~4/30) <span class="tag">分期：✅</span> </div>
-    <div class="activity-info"><div class="tier-row">
-          <span><span class="label">門檻：</span>5,000元<span class="cond">(一次付清及分期皆可)</span></span>
-          <span><span class="label">回饋：</span>150點</span>
-        </div><div class="tier-row">
-          <span><span class="label">門檻：</span>20,000元<span class="cond">(分期專屬)</span></span>
-          <span><span class="label">回饋：</span>1,200點</span>
+      </div></div><div class="platform" data-platform="momo"><div class="platform-name">🛍️ momo購物</div><div class="activity">
+        <div class="activity-title">momo購物網 刷卡優惠   (4/1~4/30) <span class="tag">需分期</span></div>
+        <div class="activity-info">
+          <span><span class="label">消費區間：</span>2026/04/01 ~ 2026/04/30</span>
+          <span><span class="label">門檻：</span>5,000元</span><span><span class="label">回饋：</span>100點</span><span><span class="label">門檻：</span>20,000元</span><span><span class="label">回饋：</span>1,000點</span>
+          
+          <span><span class="label">分期：</span>✅ 可</span>
         </div>
-      <span><span class="label">消費區間：</span>2026/04/01 ~ 2026/04/30</span>
-      <span><span class="label">登錄：</span>04/27 - 04/30（限量 4,000 名）</span>
-      
-    </div>
-  </div></div><div class="platform" data-platform="momo"><div class="platform-name">🛍️ momo購物</div><div class="activity">
-    <div class="activity-title">momo購物網 刷卡優惠   (4/1~4/30) <span class="tag">分期：✅</span> </div>
-    <div class="activity-info"><div class="tier-row">
-          <span><span class="label">門檻：</span>5,000元<span class="cond">(一次付清及分期皆可)</span></span>
-          <span><span class="label">回饋：</span>100點</span>
-        </div><div class="tier-row">
-          <span><span class="label">門檻：</span>20,000元<span class="cond">(分期專屬)</span></span>
-          <span><span class="label">回饋：</span>1,000點</span>
-        </div>
-      <span><span class="label">消費區間：</span>2026/04/01 ~ 2026/04/30</span>
-      
-      <span><span class="label">限量 4,000 名</span></span>
-    </div>
-  </div></div><div class="platform" data-platform="coupang"><div class="platform-name">🚀 酷澎 Coupang</div><div class="activity"><div class="activity-title">⚠️ 無活動</div><div class="activity-info"><span>本月無酷澎相關活動</span></div></div></div>
+      </div></div><div class="platform" data-platform="coupang"><div class="platform-name">🚀 酷澎 Coupang</div><div class="activity"><div class="activity-title">⚠️ 無活動</div><div class="activity-info"><span>本月無酷澎相關活動</span></div></div></div>
                 </div>
   
             </div>
