@@ -1,7 +1,6 @@
 /**
- * 信用卡電商活動爬蟲 + HTML 更新腳本
- * 每月 1號執行，爬取玉山/國泰活動，更新 bank-activities repo
- * 注意：會保留舊月份的資料，只更新當月
+ * 信用卡電商活動爬蟲 + HTML 更新腳本 v3
+ * 支援國泰/玉山的結構化資料解析
  */
 const { chromium } = require('playwright');
 const fs = require('fs');
@@ -13,21 +12,34 @@ function extractOldMonthGroups(existingHtml, currentMonth) {
   const oldGroups = [];
   if (!existingHtml) return oldGroups;
   
-  // 找每個 month-group div
-  const regex = /<div class="month-group[^"]*"[^>]*data-month="([^"]+)"[^>]*>[\s\S]*?<\/div>\s*<\/div>\s*(?=<div class="(?:month-group|footer)")/gi;
-  let match;
-  while ((match = regex.exec(existingHtml)) !== null) {
-    const month = match[1];
-    if (month !== currentMonth) {
-      // 補回結尾的 </div>（因為正則消耗了一個）
-      oldGroups.push(match[0] + '</div>');
+  // 找所有 month-group div
+  const monthGroupStarts = [];
+  let idx = 0;
+  while ((idx = existingHtml.indexOf('class="month-group', idx)) !== -1) {
+    // 提取 data-month 值
+    const monthMatch = existingHtml.slice(idx).match(/data-month="([^"]+)"/);
+    if (monthMatch && monthMatch[1] !== currentMonth) {
+      monthGroupStarts.push({ index: idx, month: monthMatch[1] });
     }
+    idx++;
   }
+  
+  // 對每個找到的月份，提取完整的 month-group div
+  for (const { index: startIdx, month } of monthGroupStarts) {
+    // 從 startIdx 找到下一個 <div class="footer">，那之前就是這個 month-group 的結尾
+    const footerIdx = existingHtml.indexOf('<div class="footer">', startIdx);
+    if (footerIdx === -1) continue;
+    
+    // 在 startIdx 和 footerIdx之間，找到倒數第二個 </div>（month-group 的結尾）
+    const segment = existingHtml.slice(startIdx, footerIdx);
+    const lastDivIdx = segment.lastIndexOf('</div>');
+    if (lastDivIdx === -1) continue;
+    
+    const monthGroupHtml = segment.slice(0, lastDivIdx) + '</div>';
+    oldGroups.push(monthGroupHtml);
+  }
+  
   return oldGroups;
-}
-
-function buildMonthGroupDiv(monthStr, content) {
-  return `<div class="month-group" data-month="${monthStr}">\n                ${content}\n            </div>\n            <!-- /月份群組 -->`;
 }
 
 // ========== 1. 爬取國泰世華 ==========
@@ -81,15 +93,63 @@ async function scrapeCathay() {
       await page.goto(act.url, { waitUntil: 'networkidle', timeout: 15000 });
       await page.waitForTimeout(1500);
       const content = await page.textContent('body');
-      results.push({ name: act.name, url: act.url, raw: content });
+      const parsed = parseCathayContent(act.name, content);
+      results.push(parsed);
     } catch (e) {
       console.log(`[國泰] 錯誤: ${e.message}`);
-      results.push({ name: act.name, url: act.url, raw: '', error: e.message });
     }
   }
   
   await browser.close();
   return results;
+}
+
+function parseCathayContent(name, raw) {
+  const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  
+  // 找活動期間
+  let period = '';
+  for (const line of lines) {
+    const m = line.match(/(\d{4}\/\d{2}\/\d{2})\s*[~–]\s*(\d{4}\/\d{2}\/\d{2})/);
+    if (m) { period = `${m[1]} ~ ${m[2]}`; break; }
+  }
+  
+  // 找登錄時間 (4/21 16:00至04/30 23:59 或 2026/04/21 16:00至04/30)
+  let registration = '';
+  for (const line of lines) {
+    // 標準格式: 04/21 16:00至04/30 23:59
+    const m = line.match(/(\d{1,2}\/\d{1,2})\s*\d{1,2}:\d{2}\s*[至到]\s*(\d{1,2}\/\d{1,2})\s*\d{1,2}:\d{2}/);
+    if (m) { registration = `${m[1]} - ${m[2]}`; break; }
+    // 替代格式: 2026/4/20 16:00至23:59 (只有時間，沒有結束日期)
+    const m2 = line.match(/(\d{1,2}\/\d{1,2})\s*\d{1,2}:\d{2}\s*[至到]\s*(\d{1,2}:\d{2})/);
+    if (m2) { registration = `${m2[1]} - ${m2[2]}`; break; }
+  }
+  
+  // 找限量
+  let limit = '';
+  for (const line of lines) {
+    const m = line.match(/限量[名額]?\s*登錄\s*([0-9,]+)\s*名/);
+    if (m) { limit = `限量 ${m[1]} 名`; break; }
+  }
+  
+  // 找所有 ■, ◎, 1., 2. 開頭的活動條款
+  const tiers = [];
+  for (const line of lines) {
+    const trimmed = line.trim();
+    const isBullet = trimmed.startsWith('■') || trimmed.startsWith('◎') || trimmed.match(/^[0-9]+\.\s*[^\d]/);
+    if (isBullet && (trimmed.match(/滿NT|\d+[,，]\d+|消費|分期|贈|回饋|刷卡金|蝦幣|小樹點/) || trimmed.match(/[0-9]+元以上/))) {
+      let clean = trimmed
+        .replace(/^[■◎]\s*/, '')
+        .replace(/^[0-9]+\.\s*/, '')
+        .trim();
+      if (clean.length > 10) tiers.push(clean.substring(0, 150));
+    }
+  }
+  
+  // 檢查是否分期
+  const needsInstallment = /須分期|分期付款|限3、6|限3、6、24/.test(raw);
+  
+  return { name, period, registration, limit, needsInstallment, tiers, raw };
 }
 
 // ========== 2. 爬取玉山銀行 ==========
@@ -127,10 +187,10 @@ async function scrapeEsun() {
       await page.goto(act.url, { waitUntil: 'networkidle', timeout: 15000 });
       await page.waitForTimeout(1500);
       const content = await page.textContent('body');
-      results.push({ name: act.name, url: act.url, raw: content });
+      const parsed = parseEsunContent(act.name, content);
+      results.push(parsed);
     } catch (e) {
       console.log(`[玉山] 錯誤: ${e.message}`);
-      results.push({ name: act.name, url: act.url, raw: '', error: e.message });
     }
   }
   
@@ -138,50 +198,104 @@ async function scrapeEsun() {
   return results;
 }
 
-// ========== 3. 解析活動內容 ==========
-function parseActivity(raw, bank) {
-  if (!raw) return { period: '', registration: '', tiers: [], needsInstallment: false, limit: '' };
+function parseEsunContent(name, raw) {
+  const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0 && l.length < 500);
   
-  // 期間
-  const periodMatch = raw.match(/(\d{4}\/\d{2}\/\d{2})\s*[~–]\s*(\d{4}\/\d{2}\/\d{2})/);
-  const period = periodMatch ? `${periodMatch[1]} ~ ${periodMatch[2]}` : '';
-  
-  // 登錄時間
-  let registration = '';
-  if (bank === 'cathay') {
-    const regMatch = raw.match(/(\d{1,2}\/\d{1,2})\s*\d{1,2}:\d{2}\s*[至到]\s*(\d{1,2}\/\d{1,2})\s*\d{1,2}:\d{2}/);
-    registration = regMatch ? `${regMatch[1]} - ${regMatch[2]}` : '';
-  } else {
-    const regMatch = raw.match(/登錄\s*期間[：:]?\s*(\d{1,2}\/\d{1,2})\s*[\-~]\s*(\d{1,2}\/\d{1,2})/);
-    registration = regMatch ? `${regMatch[1]} - ${regMatch[2]}` : '';
+  // 找活動期間
+  let period = '';
+  for (const line of lines) {
+    const m = line.match(/活動期間[：:]\s*(\d{4}\/\d{1,2}\/\d{1,2})\s*[~-]\s*(\d{4}\/\d{1,2}\/\d{1,2})/);
+    if (m) { period = `${m[1]} ~ ${m[2]}`; break; }
   }
   
-  // 門檻/回饋
-  const tiers = [];
-  const tierRegex = bank === 'cathay'
-    ? /滿NT?[\$]?([0-9,]+)(?:元|以上)[含]?[，]?(?:贈|回饋)[：:]?\s*(?:NT?[\$]?)?([0-9,]+)?\s*(?:點|元|蝦幣|刷卡金|小樹點)?/gi
-    : /滿(NT)?[\$]?([0-9,]+)(?:元|以上)[，]?(?:贈|回饋)[：:]?\s*(?:NT)?([0-9,]+)?\s*(?:點|e\s*point|刷卡金|mo幣)?/gi;
-  
-  let tierMatch;
-  while ((tierMatch = tierRegex.exec(raw)) !== null) {
-    if (tierMatch[2]) {
-      const reward = tierMatch[3] || '';
-      tiers.push({ threshold: tierMatch[2], reward: reward.replace(/^\s+/, '') });
+  // 如果沒找到，試另一種格式
+  if (!period) {
+    for (const line of lines) {
+      const m = line.match(/(\d{4}\/\d{1,2}\/\d{1,2})\s*[~-]\s*(\d{4}\/\d{1,2}\/\d{1,2})/);
+      if (m && line.includes('活動期間')) { period = `${m[1]} ~ ${m[2]}`; break; }
     }
   }
   
-  // 是否分期
-  const needsInstallment = /須分期|分期付款|分期3|分期6|分期9|分期12|分期24/.test(raw);
+  // 找登錄時間
+  let registration = '';
+  for (const line of lines) {
+    const m = line.match(/登錄\s*辦法[：:]?\s*(\d{1,2}\/\d{1,2})\s*\d{1,2}:\d{2}\s*[~-]\s*(\d{1,2}\/\d{1,2})\s*\d{1,2}:\d{2}/);
+    if (m) { registration = `${m[1]} - ${m[2]}`; break; }
+  }
+  // 另一種格式
+  if (!registration) {
+    for (const line of lines) {
+      const m = line.match(/(\d{1,2}\/\d{1,2})\s*\d{1,2}:\d{2}\s*[~-]\s*(\d{1,2}\/\d{1,2})\s*\d{1,2}:\d{2}/);
+      if (m) { registration = `${m[1]} - ${m[2]}`; break; }
+    }
+  }
   
-  // 限量
-  const limitMatch = raw.match(/限量[名額]?([0-9,]+)[名]?/);
-  const limit = limitMatch ? `限量 ${limitMatch[1]} 名` : '';
+  // 找限量
+  let limit = '';
+  for (const line of lines) {
+    const m = line.match(/限量[名額]?\s*([0-9,]+)\s*名/);
+    if (m) { limit = `限量 ${m[1]} 名`; break; }
+  }
   
-  return { period, registration, tiers, needsInstallment, limit };
+  // 找活動條款 (找包含關鍵字的小段落)
+  const tiers = [];
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.length > 15 && trimmed.length < 200 &&
+        (trimmed.match(/滿[\$]?[0-9]|分期|單筆|贈[0-9]|回饋[0-9]|最高享|刷卡金/))) {
+      tiers.push(trimmed.replace(/\s+/g, ' ').substring(0, 120));
+    }
+  }
+  
+  const needsInstallment = /分期/.test(raw);
+  
+  return { name, period, registration, limit, needsInstallment, tiers, raw };
 }
 
-// ========== 4. 渲染單一平台活動 ==========
-function renderBankSection(data, bank, parseFn) {
+// ========== 3. 解析門檻與回饋 ==========
+function parseTiers(tiers, bank) {
+  // 從 raw tier 行解析出门檻和回饋
+  const results = [];
+  for (const tier of tiers) {
+    if (!tier.includes('滿') && !tier.includes('贈')) {
+      results.push({ threshold: '', reward: tier.substring(0, 50) });
+      continue;
+    }
+    
+    // 基於 "贈" 分割字串
+    const parts = tier.split('贈');
+    const before = parts[0] || '';
+    const after = parts[1] || '';
+    
+    // 門檻：從前面提取金額
+    let threshold = '';
+    const nums = before.match(/[0-9,]+/g);
+    if (nums && nums.length > 0) {
+      // 取倒數第二個（倒數第一個可能是括號內的數量）
+      threshold = nums[nums.length - 1] + '元';
+    }
+    
+    // 回饋：從後面提取
+    let reward = '';
+    const rewardNumMatch = after.match(/NT?\$?([0-9,]+)|([0-9,]+)(?:點|元|刷卡金|蝦幣|e\s*point)/);
+    if (rewardNumMatch) {
+      const num = rewardNumMatch[1] || rewardNumMatch[2];
+      if (after.includes('點') || after.includes('e point')) reward = num + '點';
+      else if (after.includes('刷卡金')) reward = num + '元刷卡金';
+      else if (after.includes('蝦幣')) reward = num + '蝦幣';
+      else if (after.includes('小樹點') || after.includes('小樹點(信用卡)')) reward = num + '點小樹點';
+      else reward = num + '元';
+    } else if (after.trim()) {
+      reward = after.trim().substring(0, 40);
+    }
+    
+    results.push({ threshold, reward });
+  }
+  return results;
+}
+
+// ========== 4. 渲染函式 ==========
+function renderBankSection(data, bank) {
   if (!data || data.length === 0) {
     return `<div class="activity"><div class="activity-title">⚠️ 目前無活動資訊</div><div class="activity-info"><span>請留意銀行官網或app通知</span></div></div>`;
   }
@@ -190,115 +304,137 @@ function renderBankSection(data, bank, parseFn) {
   
   // 蝦皮
   const shopee = data.filter(a => /蝦皮|Shopee|shopee/i.test(a.name));
+  html += '<div class="platform" data-platform="shopee"><div class="platform-name">🦐 蝦皮購物</div>';
   if (shopee.length > 0) {
-    html += '<div class="platform" data-platform="shopee"><div class="platform-name">🦐 蝦皮購物</div>';
     shopee.forEach(act => {
-      const info = parseFn(act.raw, bank);
-      const tags = info.needsInstallment ? '<span class="tag">需分期</span>' : '';
-      let tiersHtml = info.tiers.map(t => 
-        `<span><span class="label">門檻：</span>NT$${t.threshold} → ${t.reward}</span>`
-      ).join('');
+      const tags = act.needsInstallment ? '<span class="tag">需分期</span>' : '';
+      const parsed = parseTiers(act.tiers, bank);
+      let tiersHtml = '';
+      if (parsed.length > 0 && parsed[0].threshold) {
+        parsed.forEach(p => {
+          if (p.threshold) tiersHtml += `<span><span class="label">門檻：</span>${p.threshold}</span>`;
+          if (p.reward) tiersHtml += `<span><span class="label">回饋：</span>${p.reward}</span>`;
+        });
+      } else {
+        // fallback: 直接輸出 tier
+        act.tiers.slice(0, 2).forEach(t => {
+          tiersHtml += `<span>${t}</span>`;
+        });
+      }
       html += `<div class="activity">
         <div class="activity-title">${act.name} ${tags}</div>
         <div class="activity-info">
-          ${info.period ? `<span><span class="label">消費區間：</span>${info.period}</span>` : ''}
+          ${act.period ? `<span><span class="label">消費區間：</span>${act.period}</span>` : ''}
           ${tiersHtml}
-          ${info.registration ? `<span><span class="label">登錄：</span>${info.registration}${info.limit ? `（${info.limit}）` : ''}</span>` : ''}
-          ${info.limit && !info.registration ? `<span><span class="label">${info.limit}</span></span>` : ''}
+          ${act.registration ? `<span><span class="label">登錄：</span>${act.registration}${act.limit ? `（${act.limit}）` : ''}</span>` : ''}
+          ${act.limit && !act.registration ? `<span><span class="label">${act.limit}</span></span>` : ''}
+          ${act.needsInstallment ? `<span><span class="label">分期：</span>✅ 可</span>` : ''}
         </div>
       </div>`;
     });
-    html += '</div>';
   } else {
-    html += `<div class="platform" data-platform="shopee"><div class="platform-name">🦐 蝦皮購物</div>
-      <div class="activity"><div class="activity-title">⚠️ 無活動</div><div class="activity-info"><span>本月無蝦皮相關活動</span></div></div></div>`;
+    html += `<div class="activity"><div class="activity-title">⚠️ 無活動</div><div class="activity-info"><span>本月無蝦皮相關活動</span></div></div>`;
   }
+  html += '</div>';
   
   // momo
   const momo = data.filter(a => /momo|Momo/i.test(a.name));
+  html += '<div class="platform" data-platform="momo"><div class="platform-name">🛍️ momo購物</div>';
   if (momo.length > 0) {
-    html += '<div class="platform" data-platform="momo"><div class="platform-name">🛍️ momo購物</div>';
     momo.forEach(act => {
-      const info = parseFn(act.raw, bank);
-      const tags = info.needsInstallment ? '<span class="tag">需分期</span>' : '';
-      let tiersHtml = info.tiers.map(t => 
-        `<span><span class="label">門檻：</span>NT$${t.threshold} → ${t.reward}</span>`
-      ).join('');
+      const tags = act.needsInstallment ? '<span class="tag">需分期</span>' : '';
+      const parsed = parseTiers(act.tiers, bank);
+      let tiersHtml = '';
+      if (parsed.length > 0 && parsed[0].threshold) {
+        parsed.forEach(p => {
+          if (p.threshold) tiersHtml += `<span><span class="label">門檻：</span>${p.threshold}</span>`;
+          if (p.reward) tiersHtml += `<span><span class="label">回饋：</span>${p.reward}</span>`;
+        });
+      } else {
+        act.tiers.slice(0, 2).forEach(t => {
+          tiersHtml += `<span>${t}</span>`;
+        });
+      }
       html += `<div class="activity">
         <div class="activity-title">${act.name} ${tags}</div>
         <div class="activity-info">
-          ${info.period ? `<span><span class="label">消費區間：</span>${info.period}</span>` : ''}
+          ${act.period ? `<span><span class="label">消費區間：</span>${act.period}</span>` : ''}
           ${tiersHtml}
-          ${info.registration ? `<span><span class="label">登錄：</span>${info.registration}${info.limit ? `（${info.limit}）` : ''}</span>` : ''}
+          ${act.registration ? `<span><span class="label">登錄：</span>${act.registration}${act.limit ? `（${act.limit}）` : ''}</span>` : ''}
+          ${act.needsInstallment ? `<span><span class="label">分期：</span>✅ 可</span>` : ''}
         </div>
       </div>`;
     });
-    html += '</div>';
   } else {
-    html += `<div class="platform" data-platform="momo"><div class="platform-name">🛍️ momo購物</div>
-      <div class="activity"><div class="activity-title">⚠️ 無活動</div><div class="activity-info"><span>本月無momo相關活動</span></div></div></div>`;
+    html += `<div class="activity"><div class="activity-title">⚠️ 無活動</div><div class="activity-info"><span>本月無momo相關活動</span></div></div>`;
   }
+  html += '</div>';
   
   // 酷澎
   const coupang = data.filter(a => /酷澎|Coupang/i.test(a.name));
+  html += '<div class="platform" data-platform="coupang"><div class="platform-name">🚀 酷澎 Coupang</div>';
   if (coupang.length > 0) {
-    html += '<div class="platform" data-platform="coupang"><div class="platform-name">🚀 酷澎 Coupang</div>';
     coupang.forEach(act => {
-      const info = parseFn(act.raw, bank);
-      const tags = info.needsInstallment ? '<span class="tag">需分期</span>' : '';
-      let tiersHtml = info.tiers.map(t => 
-        `<span><span class="label">門檻：</span>NT$${t.threshold} → ${t.reward}</span>`
-      ).join('');
+      const tags = act.needsInstallment ? '<span class="tag">需分期</span>' : '';
+      const parsed = parseTiers(act.tiers, bank);
+      let tiersHtml = '';
+      if (parsed.length > 0 && parsed[0].threshold) {
+        parsed.forEach(p => {
+          if (p.threshold) tiersHtml += `<span><span class="label">門檻：</span>${p.threshold}</span>`;
+          if (p.reward) tiersHtml += `<span><span class="label">回饋：</span>${p.reward}</span>`;
+        });
+      } else {
+        act.tiers.slice(0, 2).forEach(t => {
+          tiersHtml += `<span>${t}</span>`;
+        });
+      }
       html += `<div class="activity">
         <div class="activity-title">${act.name} ${tags}</div>
         <div class="activity-info">
-          ${info.period ? `<span><span class="label">消費區間：</span>${info.period}</span>` : ''}
+          ${act.period ? `<span><span class="label">消費區間：</span>${act.period}</span>` : ''}
           ${tiersHtml}
-          ${info.registration ? `<span><span class="label">登錄：</span>${info.registration}${info.limit ? `（${info.limit}）` : ''}</span>` : ''}
+          ${act.registration ? `<span><span class="label">登錄：</span>${act.registration}${act.limit ? `（${act.limit}）` : ''}</span>` : ''}
+          ${act.needsInstallment ? `<span><span class="label">分期：</span>✅ 可</span>` : ''}
         </div>
       </div>`;
     });
-    html += '</div>';
   } else {
-    html += `<div class="platform" data-platform="coupang"><div class="platform-name">🚀 酷澎 Coupang</div>
-      <div class="activity"><div class="activity-title">⚠️ 無活動</div><div class="activity-info"><span>本月無酷澎相關活動</span></div></div></div>`;
+    html += `<div class="activity"><div class="activity-title">⚠️ 無活動</div><div class="activity-info"><span>本月無酷澎相關活動</span></div></div>`;
   }
+  html += '</div>';
   
   return html;
 }
 
-// ========== 5. 完整 HTML 結構（保留舊月） ==========
+// ========== 4. 完整 HTML 結構 ==========
 function generateHTML(cathayData, esunData, updateDate, existingHtml) {
   const currentMonth = new Date().toISOString().slice(0, 7);
   const monthLabel = `${currentMonth.slice(0, 4)}年${parseInt(currentMonth.slice(5))}月`;
   const prevMonth = new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().slice(0, 7);
   const prevMonthLabel = `${prevMonth.slice(0, 4)}年${parseInt(prevMonth.slice(5))}月`;
   
-  // 讀取舊月份的 month-group（排除當月）
   const oldGroups = extractOldMonthGroups(existingHtml || '', currentMonth);
-  
-  // 建立「上個月」的 option 標籤（如果還沒有）
   const hasPrevOption = existingHtml ? existingHtml.includes(`value="${prevMonth}"`) : false;
   const prevMonthOption = hasPrevOption ? '' : `<option value="${prevMonth}">${prevMonthLabel}</option>`;
   
-  // 當月內容
   const currentMonthContent = `
                 <div class="bank-section" data-bank="esun">
                     <div class="bank-title"><span class="bank-icon">🏦</span>玉山銀行</div>
-                    ${renderBankSection(esunData, 'esun', parseActivity)}
+                    ${renderBankSection(esunData, 'esun')}
                 </div>
                 <div class="bank-section" data-bank="cathay">
                     <div class="bank-title"><span class="bank-icon">💳</span>國泰世華銀行</div>
-                    ${renderBankSection(cathayData, 'cathay', parseActivity)}
+                    ${renderBankSection(cathayData, 'cathay')}
                 </div>
   `;
   
-  const currentMonthGroup = buildMonthGroupDiv(currentMonth, currentMonthContent);
+  const currentMonthGroup = `<div class="month-group" data-month="${currentMonth}">
+                ${currentMonthContent}
+            </div>`;
   
-  // 組合所有月份區塊
   const allMonthGroups = [currentMonthGroup, ...oldGroups].join('\n');
   
-  const html = `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -329,13 +465,13 @@ function generateHTML(cathayData, esunData, updateDate, existingHtml) {
         .platform-name { font-size: 1.2em; color: #667eea; margin-bottom: 15px; font-weight: bold; }
         .activity { background: #f8f9fa; border-radius: 12px; padding: 18px; margin-bottom: 15px; border-left: 4px solid #667eea; }
         .activity-title { font-weight: bold; font-size: 1.05em; color: #333; margin-bottom: 10px; }
-        .activity-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; font-size: 0.9em; color: #555; }
-        .activity-info span { display: flex; align-items: center; gap: 5px; }
+        .activity-info { display: flex; flex-direction: column; gap: 6px; font-size: 0.9em; color: #555; }
+        .activity-info span { display: block; line-height: 1.4; }
         .label { font-weight: bold; color: #333; }
         .tag { display: inline-block; background: #667eea; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; margin-right: 5px; }
         .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 0.85em; }
         .hidden { display: none !important; }
-        @media (max-width: 768px) { .container { flex-direction: column; } .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #eee; } .activity-info { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .container { flex-direction: column; } .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #eee; } }
     </style>
 </head>
 <body>
@@ -377,11 +513,9 @@ function generateHTML(cathayData, esunData, updateDate, existingHtml) {
     </script>
 </body>
 </html>`;
-  
-  return html;
 }
 
-// ========== 6. 主流程 ==========
+// ========== 5. 主流程 ==========
 async function main() {
   console.log('========== 開始更新信用卡活動 ==========');
   console.log(`時間: ${new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' })}`);
@@ -389,7 +523,6 @@ async function main() {
   const repoPath = __dirname;
   const today = new Date().toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '/');
   
-  // 讀取現有 HTML（用於保留舊月份）
   let existingHtml = '';
   const existingPath = path.join(repoPath, 'index.html');
   if (fs.existsSync(existingPath)) {
@@ -397,18 +530,15 @@ async function main() {
     console.log('📋 找到舊 HTML，將保留舊月份資料');
   }
   
-  // 爬蟲
   const [cathayData, esunData] = await Promise.all([
     scrapeCathay().catch(e => { console.error('[國泰] 失敗:', e.message); return []; }),
     scrapeEsun().catch(e => { console.error('[玉山] 失敗:', e.message); return []; })
   ]);
   
-  // 產生 HTML
   const html = generateHTML(cathayData, esunData, today, existingHtml);
   fs.writeFileSync(existingPath, html, 'utf8');
   console.log('✅ 已更新 index.html');
   
-  // Git
   try {
     execSync('git config user.email "shaxia-agent@openclaw.ai"', { cwd: repoPath });
     execSync('git config user.name "蝦蝦 Agent"', { cwd: repoPath });
@@ -424,6 +554,26 @@ async function main() {
   console.log(`國泰世華: ${cathayData.length} 個活動`);
   console.log(`玉山銀行: ${esunData.length} 個活動`);
   console.log(`GitHub Pages: https://supercompany31123-spec.github.io/bank-activities/`);
+  
+  // Debug: 顯示解析結果
+  if (cathayData.length > 0) {
+    console.log('\n--- 國泰解析結果 ---');
+    cathayData.forEach(a => {
+      console.log(`[${a.name}]`);
+      console.log(`  期間: ${a.period} | 登錄: ${a.registration} ${a.limit}`);
+      console.log(`  分期: ${a.needsInstallment} | 條款數: ${a.tiers.length}`);
+      a.tiers.slice(0, 2).forEach(t => console.log(`  - ${t.substring(0, 80)}`));
+    });
+  }
+  if (esunData.length > 0) {
+    console.log('\n--- 玉山解析結果 ---');
+    esunData.forEach(a => {
+      console.log(`[${a.name}]`);
+      console.log(`  期間: ${a.period} | 登錄: ${a.registration} ${a.limit}`);
+      console.log(`  分期: ${a.needsInstallment} | 條款數: ${a.tiers.length}`);
+      a.tiers.slice(0, 2).forEach(t => console.log(`  - ${t.substring(0, 80)}`));
+    });
+  }
 }
 
 main().catch(console.error);
