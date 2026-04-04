@@ -50,6 +50,8 @@ async function scrapeCathay() {
   
   console.log('[國泰] 導航...');
   await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 30000 });
+  // 等第一頁活動出現
+  await page.waitForSelector('p.l-cardDiscountAllContent__discount--title.h3', { timeout: 10000 }).catch(() => {});
   await page.waitForTimeout(2000);
   
   // 點擊「網購、APP」分類 tab
@@ -57,7 +59,8 @@ async function scrapeCathay() {
     const labels = document.querySelectorAll('label.cursor-\\[inherit\\]\\.select-none');
     for (const label of labels) {
       if (label.textContent.trim() === '網購、APP') {
-        label.click();
+        const evt = new MouseEvent('click', { bubbles: true, cancelable: true });
+        label.dispatchEvent(evt);
         return true;
       }
     }
@@ -68,7 +71,22 @@ async function scrapeCathay() {
     await page.waitForTimeout(3000);
   }
   
-  const h3Selector = 'h3.mb-2\\.5.text-lg.leading-normal.font-cathay-medium';
+  // 點擊「展開更多」直到沒有為止
+  let expandCount = 0;
+  while (expandCount < 20) {
+    try {
+      const expandBtn = page.locator('button:has-text("展開更多")').first();
+      const btnExists = await expandBtn.count();
+      if (!btnExists) { console.log('[國泰] 無更多展開'); break; }
+      await expandBtn.click();
+      await page.waitForTimeout(800);
+      expandCount++;
+      const cnt = (await page.locator('h3[class*="mb-2"]').all()).length;
+      console.log('[國泰] 展開 #' + expandCount + '，目前' + cnt + '個');
+    } catch (e) { console.log('[國泰] 展開失敗: ' + e.message.substring(0, 40)); break; }
+  }
+
+  const h3Selector = 'h3[class*="mb-2"]';
   const keywords = ['蝦皮', '酷澎', 'momo'];
   const activities = await page.locator(h3Selector).all();
   
@@ -160,24 +178,62 @@ async function scrapeEsun() {
   
   console.log('[玉山] 導航...');
   await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 30000 });
+  // 等第一頁活動出現
+  await page.waitForSelector('p.l-cardDiscountAllContent__discount--title.h3', { timeout: 10000 }).catch(() => {});
   await page.waitForTimeout(2000);
   
   const selector = 'p.l-cardDiscountAllContent__discount--title.h3';
   const keywords = ['蝦皮', '酷澎', 'momo', 'Shopee', 'Coupang'];
-  const activities = await page.locator(selector).all();
-  
+
+  // 【關鍵】分頁：收集所有頁面的電商活動
   const filtered = [];
-  for (const act of activities) {
-    const text = await act.textContent();
-    if (keywords.some(kw => text.toLowerCase().includes(kw.toLowerCase()))) {
-      const parentA = await act.locator('xpath=ancestor::a').first();
-      const href = await parentA.getAttribute('href');
-      filtered.push({
-        name: text.trim(),
-        url: href ? `https://www.esunbank.com${href}` : null
-      });
+  let pageNum = 1;
+  let prevCount = 0;
+  let prevPageActivities = [];
+
+  while (true) {
+    const currentUrl = page.url();
+    const activities = await page.locator(selector).all();
+    const count = activities.length;
+    console.log('[玉山] 第' + pageNum + '頁，找到' + count + '個');
+
+    for (const act of activities) {
+      const text = await act.textContent();
+      if (keywords.some(kw => text.toLowerCase().includes(kw.toLowerCase()))) {
+        const parentA = await act.locator('xpath=ancestor::a').first();
+        const href = await parentA.getAttribute('href');
+        if (!filtered.find(a => a.url === 'https://www.esunbank.com' + href)) {
+          filtered.push({ name: text.trim(), url: href ? 'https://www.esunbank.com' + href : null });
+        }
+      }
     }
+
+    // 【停止條件】活動數沒增加就停止
+    if (count === 0 || (count === prevCount && pageNum > 1)) {
+      console.log('[玉山] 停止分頁 (count=' + count + ', prev=' + prevCount + ')');
+      break;
+    }
+    prevCount = count;
+
+    // 點下一頁
+    const hasNext = await page.evaluate(() => {
+      const btn = document.querySelector('li.page-item.next a');
+      if (!btn) return false;
+      btn.click();
+      return true;
+    });
+
+    if (!hasNext) {
+      console.log('[玉山] 沒有下一頁了');
+      break;
+    }
+
+    pageNum++;
+    if (pageNum > 10) { console.log('[玉山] 超過10頁，強制停止'); break; }
+    await page.waitForTimeout(2000);
   }
+
+  console.log('[玉山] 共找到' + filtered.length + '個電商活動');
   
   const results = [];
   for (const act of filtered) {
@@ -466,8 +522,12 @@ function generateHTML(cathayData, esunData, updateDate, existingHtml) {
         .activity { background: #f8f9fa; border-radius: 12px; padding: 18px; margin-bottom: 15px; border-left: 4px solid #667eea; }
         .activity-title { font-weight: bold; font-size: 1.05em; color: #333; margin-bottom: 10px; }
         .activity-info { display: flex; flex-direction: column; gap: 6px; font-size: 0.9em; color: #555; }
-        .activity-info span { display: block; line-height: 1.4; }
+        .activity-info > div { padding: 2px 0; }
+        .activity-info span { display: inline; }
         .label { font-weight: bold; color: #333; }
+        .tier-section { margin-bottom: 8px; }
+        .tier-items { padding-left: 10px; }
+        .tier-item { padding: 2px 0; }
         .tag { display: inline-block; background: #667eea; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; margin-right: 5px; }
         .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 0.85em; }
         .hidden { display: none !important; }
@@ -530,10 +590,8 @@ async function main() {
     console.log('📋 找到舊 HTML，將保留舊月份資料');
   }
   
-  const [cathayData, esunData] = await Promise.all([
-    scrapeCathay().catch(e => { console.error('[國泰] 失敗:', e.message); return []; }),
-    scrapeEsun().catch(e => { console.error('[玉山] 失敗:', e.message); return []; })
-  ]);
+  const esunData = await scrapeEsun().catch(e => { console.error('[玉山] 失敗:', e.message); return []; });
+  const cathayData = await scrapeCathay().catch(e => { console.error('[國泰] 失敗:', e.message); return []; });
   
   const html = generateHTML(cathayData, esunData, today, existingHtml);
   fs.writeFileSync(existingPath, html, 'utf8');
