@@ -30,8 +30,12 @@
         .activity { background: #f8f9fa; border-radius: 12px; padding: 18px; margin-bottom: 15px; border-left: 4px solid #667eea; }
         .activity-title { font-weight: bold; font-size: 1.05em; color: #333; margin-bottom: 10px; }
         .activity-info { display: flex; flex-direction: column; gap: 6px; font-size: 0.9em; color: #555; }
-        .activity-info span { display: block; line-height: 1.4; }
+        .activity-info > div { padding: 2px 0; }
+        .activity-info span { display: inline; }
         .label { font-weight: bold; color: #333; }
+        .tier-section { margin-bottom: 8px; }
+        .tier-items { padding-left: 10px; }
+        .tier-item { padding: 2px 0; }
         .tag { display: inline-block; background: #667eea; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; margin-right: 5px; }
         .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 0.85em; }
         .hidden { display: none !important; }
@@ -44,7 +48,7 @@
             <h3>📅 選擇月份</h3>
             <select class="month-select" id="monthSelect" onchange="filterByMonth()">
                 <option value="2026-04" selected>2026年4月（最新）</option>
-                <option value="2026-03">2026年3月</option>
+                
             </select>
             <h3>🏷️ 篩選電商平台</h3>
             <div class="filter-group">
