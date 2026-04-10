@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>信用卡電商活動整理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            display: flex;
+        }
+        /* 側邊篩選器 */
+        .sidebar {
+            width: 240px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-right: 1px solid #eee;
+        }
+        .sidebar h3 {
+            font-size: 1em;
+            color: #333;
+            margin-bottom: 12px;
+            margin-top: 15px;
+        }
+        .sidebar h3:first-child {
+            margin-top: 0;
+        }
+        .filter-group label {
+            display: block;
+            padding: 10px 15px;
+            margin-bottom: 6px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #555;
+            font-size: 0.95em;
+        }
+        .filter-group label:hover {
+            background: #e9ecef;
+        }
+        .filter-group input[type="checkbox"] {
+            display: none;
+        }
+        .filter-group label span {
+            display: block;
+            padding: 10px 15px;
+            margin-bottom: 6px;
+            border-radius: 8px;
+            background: white;
+            transition: all 0.3s;
+            font-size: 0.95em;
+        }
+        .filter-group input[type="checkbox"]:checked + span {
+            background: #667eea;
+            color: white;
+        }
+        /* 下拉選單 */
+        .month-select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 1em;
+            background: white;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .month-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        /* 主要內容 */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 20px 20px 0 0;
+        }
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+        .header p {
+            opacity: 0.9;
+            font-size: 1em;
+        }
+        .bank-section {
+            padding: 20px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .bank-section:last-child {
+            border-bottom: none;
+        }
+        .bank-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .bank-icon {
+            font-size: 1.3em;
+        }
+        .platform {
+            margin-bottom: 25px;
+        }
+        .platform-name {
+            font-size: 1.2em;
+            color: #667eea;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .activity {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+        .activity-title {
+            font-weight: bold;
+            font-size: 1.05em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .activity-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 8px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        .activity-info span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .label {
+            font-weight: bold;
+            color: #333;
+        }
+        .tag {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-right: 5px;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 0.85em;
+        }
+        .hidden {
+            display: none !important;
+        }
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #eee;
+            }
+            .activity-info {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 側邊篩選器 -->
+        <div class="sidebar">
+            <h3>📅 選擇月份</h3>
+            <select class="month-select" id="monthSelect" onchange="filterByMonth()">
+                <option value="2026-04" selected>2026年4月（最新）</option>
+                <option value="2026-03">2026年3月</option>
+            </select>
+            
+            <h3>🏷️ 篩選電商平台</h3>
+            <div class="filter-group">
+                <label>
+                    <input type="checkbox" id="filter-shopee" checked onchange="filterActivities()">
+                    <span>🦐 蝦皮購物</span>
+                </label>
+                <label>
+                    <input type="checkbox" id="filter-momo" checked onchange="filterActivities()">
+                    <span>🛍️ momo購物</span>
+                </label>
+                <label>
+                    <input type="checkbox" id="filter-coupang" checked onchange="filterActivities()">
+                    <span>🚀 酷澎</span>
+                </label>
+            </div>
+            
+            <h3>🏦 篩選銀行</h3>
+            <div class="filter-group">
+                <label>
+                    <input type="checkbox" id="filter-esun" checked onchange="filterActivities()">
+                    <span>🏦 玉山銀行</span>
+                </label>
+                <label>
+                    <input type="checkbox" id="filter-cathay" checked onchange="filterActivities()">
+                    <span>💳 國泰世華</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- 主要內容 -->
+        <div class="main-content">
+            <div class="header">
+                <h1>💳 信用卡電商活動整理</h1>
+                <p>玉山銀行 x 國泰世華銀行</p>
+            </div>
+
+            <!-- 2026年4月 -->
+            <div class="month-group" data-month="2026-04">
+                <div class="bank-section" data-bank="esun">
+                    <div class="bank-title">
+                        <span class="bank-icon">🏦</span>
+                        玉山銀行
+                    </div>
+
+                    <div class="platform" data-platform="shopee">
+                        <div class="platform-name">🦐 蝦皮購物</div>
+                        <div class="activity">
+                            <div class="activity-title">Pi拍錢包卡 — 滿額加碼2% P幣回饋 <span class="tag">線上購物適用</span></div>
+                            <div class="activity-info">
+                                <span><span class="label">期間：</span>2026/4/1～6/30</span>
+                                <span><span class="label">門檻：</span>月累積消費滿8,000元</span>
+                                <span><span class="label">回饋：</span>不限通路加碼2% P幣（每月上限200 P幣）</span>
+                                <span><span class="label">疊加：</span>滿10,000元再+0.8%（最高3.6%）</span>
+                                <span><span class="label">回饋方式：</span>次月10日回饋至Pi拍錢包P幣帳戶</span>
+                                <span><a href="https://esun.co/Pv7q3" target="_blank">活動詳情 →</a></span>
+                            </div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-title">卡友限定 — 任刷一筆贈衛生紙 <span class="tag">分眾限定</span></div>
+                            <div class="activity-info">
+                                <span><span class="label">期間：</span>2026/4/1～4/15</span>
+                                <span><span class="label">門檻：</span>活動期間任刷一筆（不限金額）</span>
+                                <span><span class="label">回饋：</span>超柔抽取式衛生紙1串（每歸戶上限1串）</span>
+                                <span><span class="label">領取：</span>2026/6/15起入券至玉山Wallet App</span>
+                                <span><a href="https://esun.co/Z6sC2" target="_blank">活動詳情 →</a></span>
+                            </div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-title">熊本熊卡 — 涼一夏分眾促刷 <span class="tag">分眾限定</span></div>
+                            <div class="activity-info">
+                                <span><span class="label">期間：</span>2026/4/1～4/30</span>
+                                <span><span class="label">門檻：</span>新增3筆且單筆滿100元</span>
+                                <span><span class="label">回饋：</span>熊本熊冰霸杯1個（每歸戶上限1個）</span>
+                                <span><span class="label">領取：</span>2026/6/15起入券至玉山Wallet App</span>
+                            </div>
+                        </div>
+                        <p style="color:#888;font-size:0.85em;margin-top:8px;">⚠️ 玉山銀行2026年4月無針對蝦皮之通路專屬限時加碼活動，上方優惠為不限通路適用。</p>
+                    </div>
+
+                    <div class="platform" data-platform="momo">
+                        <div class="platform-name">🛍️ momo購物</div>
+                        <div class="activity">
+                            <div class="activity-title">Pi拍錢包卡 — 滿額加碼2% P幣回饋 <span class="tag">線上購物適用</span></div>
+                            <div class="activity-info">
+                                <span><span class="label">期間：</span>2026/4/1～6/30</span>
+                                <span><span class="label">門檻：</span>月累積消費滿8,000元</span>
+                                <span><span class="label">回饋：</span>不限通路加碼2% P幣（每月上限200 P幣）</span>
+                                <span><span class="label">疊加：</span>滿10,000元再+0.8%（最高3.6%）</span>
+                                <span><span class="label">回饋方式：</span>次月10日回饋至Pi拍錢包P幣帳戶</span>
+                                <span><a href="https://esun.co/Pv7q3" target="_blank">活動詳情 →</a></span>
+                            </div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-title">卡友限定 — 任刷一筆贈衛生紙 <span class="tag">分眾限定</span></div>
+                            <div class="activity-info">
+                                <span><span class="label">期間：</span>2026/4/1～4/15</span>
+                                <span><span class="label">門檻：</span>活動期間任刷一筆（不限金額）</span>
+                                <span><span class="label">回饋：</span>超柔抽取式衛生紙1串（每歸戶上限1串）</span>
+                                <span><span class="label">領取：</span>2026/6/15起入券至玉山Wallet App</span>
+                                <span><a href="https://esun.co/Z6sC2" target="_blank">活動詳情 →</a></span>
+                            </div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-title">熊本熊卡 — 涼一夏分眾促刷 <span class="tag">分眾限定</span></div>
+                            <div class="activity-info">
+                                <span><span class="label">期間：</span>2026/4/1～4/30</span>
+                                <span><span class="label">門檻：</span>新增3筆且單筆滿100元</span>
+                                <span><span class="label">回饋：</span>熊本熊冰霸杯1個（每歸戶上限1個）</span>
+                                <span><span class="label">領取：</span>2026/6/15起入券至玉山Wallet App</span>
+                            </div>
+                        </div>
+                        <p style="color:#888;font-size:0.85em;margin-top:8px;">⚠️ 玉山銀行2026年4月無針對momo之通路專屬限時加碼活動，上方優惠為不限通路適用。</p>
+                    </div>
+
+                    <div class="platform" data-platform="coupang">
+                        <div class="platform-name">🚀 酷澎 Coupang</div>
+                        <div class="activity">
+                            <div class="activity-title">Pi拍錢包卡 — 滿額加碼2% P幣回饋 <span class="tag">線上購物適用</span></div>
+                            <div class="activity-info">
+                                <span><span class="label">期間：</span>2026/4/1～6/30</span>
+                                <span><span class="label">門檻：</span>月累積消費滿8,000元</span>
+                                <span><span class="label">回饋：</span>不限通路加碼2% P幣（每月上限200 P幣）</span>
+                                <span><span class="label">疊加：</span>滿10,000元再+0.8%（最高3.6%）</span>
+                                <span><span class="label">回饋方式：</span>次月10日回饋至Pi拍錢包P幣帳戶</span>
+                                <span><a href="https://esun.co/Pv7q3" target="_blank">活動詳情 →</a></span>
+                            </div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-title">卡友限定 — 任刷一筆贈衛生紙 <span class="tag">分眾限定</span></div>
+                            <div class="activity-info">
+                                <span><span class="label">期間：</span>2026/4/1～4/15</span>
+                                <span><span class="label">門檻：</span>活動期間任刷一筆（不限金額）</span>
+                                <span><span class="label">回饋：</span>超柔抽取式衛生紙1串（每歸戶上限1串）</span>
+                                <span><span class="label">領取：</span>2026/6/15起入券至玉山Wallet App</span>
+                                <span><a href="https://esun.co/Z6sC2" target="_blank">活動詳情 →</a></span>
+                            </div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-title">熊本熊卡 — 涼一夏分眾促刷 <span class="tag">分眾限定</span></div>
+                            <div class="activity-info">
+                                <span><span class="label">期間：</span>2026/4/1～4/30</span>
+                                <span><span class="label">門檻：</span>新增3筆且單筆滿100元</span>
+                                <span><span class="label">回饋：</span>熊本熊冰霸杯1個（每歸戶上限1個）</span>
+                                <span><span class="label">領取：</span>2026/6/15起入券至玉山Wallet App</span>
+                            </div>
+                        </div>
+                        <p style="color:#888;font-size:0.85em;margin-top:8px;">⚠️ 玉山銀行2026年4月無針對酷澎之通路專屬限時加碼活動，上方優惠為不限通路適用。</p>
+                    </div>
+                </div>
+
+                <div class="bank-section" data-bank="cathay">
+                    <div class="bank-title">
+                        <span class="bank-icon">💳</span>
+                        國泰世華銀行
+                    </div>
+
+                    <div class="platform" data-platform="shopee">
+                        <div class="platform-name">🦐 蝦皮購物</div>
+                        <div class="activity">
+                            <div class="activity-title">⚠️ 無法驗證 — CUBE卡官網JavaScript渲染無法爬取</div>
+                            <div class="activity-info">
+                                <span>國泰世華官網（含CUBE卡優惠頁）全面採用JavaScript動態渲染，一般HTTP請求僅取得空殼HTML或404。</span>
+                                <span>PTT creditcard看板2026年4月以來亦無相關情報文。</span>
+                                <span style="color:#d9534f;"><span class="label">目前無法確認</span>國泰世華2026年4月是否有針對蝦皮的專屬限時回饋活動。</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="platform" data-platform="momo">
+                        <div class="platform-name">🛍️ momo購物</div>
+                        <div class="activity">
+                            <div class="activity-title">⚠️ 無法驗證 — CUBE卡官網JavaScript渲染無法爬取</div>
+                            <div class="activity-info">
+                                <span>國泰世華官網（含CUBE卡優惠頁）全面採用JavaScript動態渲染，一般HTTP請求僅取得空殼HTML或404。</span>
+                                <span>PTT creditcard看板2026年4月以來亦無相關情報文。</span>
+                                <span style="color:#d9534f;"><span class="label">目前無法確認</span>國泰世華2026年4月是否有針對momo的專屬限時回饋活動。</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="platform" data-platform="coupang">
+                        <div class="platform-name">🚀 酷澎 Coupang</div>
+                        <div class="activity">
+                            <div class="activity-title">⚠️ 無法驗證 — CUBE卡官網JavaScript渲染無法爬取</div>
+                            <div class="activity-info">
+                                <span>國泰世華官網（含CUBE卡優惠頁）全面採用JavaScript動態渲染，一般HTTP請求僅取得空殼HTML或404。</span>
+                                <span>PTT creditcard看板2026年4月以來亦無相關情報文。</span>
+                                <span style="color:#d9534f;"><span class="label">目前無法確認</span>國泰世華2026年4月是否有針對酷澎的專屬限時回饋活動。</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p style="color:#888;font-size:0.85em;margin-top:8px;">💡 建議：使用Playwright截圖工具親自到 <a href="https://www.cathay-cube.com.tw" target="_blank">cathay-cube.com.tw</a> 查看，或聯繫國泰世華客服（02-2383-1166）口頭確認。</p>
+                </div>
+            </div>
+
+            <!-- 2026年3月 -->
+            <div class="month-group hidden" data-month="2026-03">
+                <div class="bank-section" data-bank="esun">
+                    <div class="bank-title">
+                        <span class="bank-icon">🏦</span>
+                        玉山銀行
+                    </div>
+
+                    <div class="platform" data-platform="shopee">
+                        <div class="platform-name">🦐 蝦皮購物</div>
+                        <div class="activity">
+                            <div class="activity-title">活動一：3月全月</div>
+                            <div class="activity-info">
+                                <span><span class="label">消費區間：</span>3/1-3/31</span>
+                                <span><span class="label">門檻：</span>5,000元</span>
+                                <span><span class="label">回饋：</span>300元刷卡金</span>
+                                <span><span class="label">登錄：</span>3/26 17:00（限量2,000名）</span>
+                                <span><span class="label">分期：</span>✅ 可</span>
+                            </div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-title">活動二：3.3購物節 <span class="tag">需分期</span></div>
+                            <div class="activity-info">
+                                <span><span class="label">消費區間：</span>3/1-3/17</span>
+                                <span><span class="label">門檻：</span>10,000/22,000/33,000元</span>
+                                <span><span class="label">回饋：</span>800/1,500/2,200點 e point</span>
+                                <span><span class="label">登錄：</span>3/20 17:00（限量1,500名）</span>
+                            </div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-title">活動四：蝦皮狂購日 <span class="tag">需分期</span></div>
+                            <div class="activity-info">
+                                <span><span class="label">消費區間：</span>3/18-3/31</span>
+                                <span><span class="label">門檻：</span>13,000/28,000元</span>
+                                <span><span class="label">回饋：</span>1,000/1,800點 e point</span>
+                                <span><span class="label">登錄：</span>3/30 17:00（限量1,200名）</span>
+                            </div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-title">活動五：週五玉山日</div>
+                            <div class="activity-info">
+                                <span><span class="label">消費區間：</span>3/6、3/13、3/20、3/27</span>
+                                <span><span class="label">門檻：</span>2,000元</span>
+                                <span><span class="label">回饋：</span>100點 e point</span>
+                                <span><span class="label">登錄：</span>3/22 17:00（限量1,500名）</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="platform" data-platform="momo">
+                        <div class="platform-name">🛍️ momo購物</div>
+                        <div class="activity">
+                            <div class="activity-title">玉山卡全站限時優惠 ⭐新</div>
+                            <div class="activity-info">
+                                <span><span class="label">消費區間：</span>3/1-3/12</span>
+                                <span><span class="label">回饋：</span>3% mo幣（上限300）</span>
+                                <span><span class="label">登錄：</span>3/13 10:00（momo app，限量7,000名）</span>
+                            </div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-title">活動一：女王節 <span class="tag">需分期</span></div>
+                            <div class="activity-info">
+                                <span><span class="label">消費區間：</span>3/1-3/12</span>
+                                <span><span class="label">門檻：</span>8,000/20,000/35,000元</span>
+                                <span><span class="label">回饋：</span>800/1,500/2,500元</span>
+                                <span><span class="label">登錄：</span>3/16 17:00（限量1,500名）</span>
+                            </div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-title">活動二：會員日 <span class="tag">需分期</span></div>
+                            <div class="activity-info">
+                                <span><span class="label">消費區間：</span>3/13-3/31</span>
+                                <span><span class="label">門檻：</span>10,000/24,000元</span>
+                                <span><span class="label">回饋：</span>700/1,500元</span>
+                                <span><span class="label">登錄：</span>3/31 17:00（限量1,000名）</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="platform" data-platform="coupang">
+                        <div class="platform-name">🚀 酷澎 Coupang</div>
+                        <div class="activity">
+                            <div class="activity-title">活動一</div>
+                            <div class="activity-info">
+                                <span><span class="label">消費區間：</span>3/1-3/31</span>
+                                <span><span class="label">門檻：</span>2,500/5,000元</span>
+                                <span><span class="label">回饋：</span>180/700點 e point</span>
+                                <span><span class="label">登錄：</span>3/23 13:00（限量1,500名）</span>
+                            </div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-title">活動二 <span class="tag">需分期</span></div>
+                            <div class="activity-info">
+                                <span><span class="label">消費區間：</span>3/1-3/31</span>
+                                <span><span class="label">門檻：</span>10,000元（分期3/6/9/12/24期）</span>
+                                <span><span class="label">回饋：</span>500點 e point</span>
+                                <span><span class="label">登錄：</span>3/24 13:00（限量1,000名）</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bank-section" data-bank="cathay">
+                    <div class="bank-title">
+                        <span class="bank-icon">💳</span>
+                        國泰世華銀行
+                    </div>
+
+                    <div class="platform" data-platform="shopee">
+                        <div class="platform-name">🦐 蝦皮購物</div>
+                        <div class="activity">
+                            <div class="activity-title">蝦皮聯名卡加碼 <span class="tag">限定蝦皮聯名卡</span></div>
+                            <div class="activity-info">
+                                <span><span class="label">消費區間：</span>3/1-3/31</span>
+                                <span><span class="label">門檻：</span>6,500/15,000元</span>
+                                <span><span class="label">回饋：</span>650/1,800蝦幣</span>
+                                <span><span class="label">登錄：</span>3/24 16:00（限量1,500名）</span>
+                            </div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-title">蝦皮狂購盛典 <span class="tag">需分期</span></div>
+                            <div class="activity-info">
+                                <span><span class="label">消費區間：</span>3/1-3/31</span>
+                                <span><span class="label">門檻：</span>10,000/25,000元</span>
+                                <span><span class="label">回饋：</span>500/2,000元刷卡金</span>
+                                <span><span class="label">登錄：</span>3/11 16:00（限量1,000名）</span>
+                            </div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-title">蝦皮購物嘉年華 <span class="tag">需分期</span></div>
+                            <div class="activity-info">
+                                <span><span class="label">消費區間：</span>3/1-3/31</span>
+                                <span><span class="label">門檻：</span>5,000/20,000元</span>
+                                <span><span class="label">回饋：</span>150/1,200元刷卡金</span>
+                                <span><span class="label">登錄：</span>3/24 16:00（限量4,000名）</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="platform" data-platform="momo">
+                        <div class="platform-name">🛍️ momo購物</div>
+                        <div class="activity">
+                            <div class="activity-title">momo女王節 <span class="tag">需分期</span></div>
+                            <div class="activity-info">
+                                <span><span class="label">消費區間：</span>3/1-3/10</span>
+                                <span><span class="label">門檻：</span>15,000/30,000元</span>
+                                <span><span class="label">回饋：</span>1,000/3,000點小樹點</span>
+                                <span><span class="label">登錄：</span>3/12 16:00（限量800名）</span>
+                            </div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-title">momo全月刷卡 <span class="tag">需分期</span></div>
+                            <div class="activity-info">
+                                <span><span class="label">消費區間：</span>3/1-3/31</span>
+                                <span><span class="label">門檻：</span>5,000/20,000元</span>
+                                <span><span class="label">回饋：</span>150/1,200點小樹點</span>
+                                <span><span class="label">登錄：</span>3/25 16:00（限量3,000名）</span>
+                            </div>
+                        </div>
+                        <div class="activity">
+                            <div class="activity-title">加碼優惠</div>
+                            <div class="activity-info">
+                                <span>輸入序號【J4AA0OIYCRB2】享單品滿990現折200元</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="platform" data-platform="coupang">
+                        <div class="platform-name">🚀 酷澎 Coupang</div>
+                        <div class="activity">
+                            <div class="activity-title">女王優惠 <span class="tag">需WOW會員</span></div>
+                            <div class="activity-info">
+                                <span><span class="label">消費區間：</span>3/1-3/31</span>
+                                <span><span class="label">門檻：</span>5,000元</span>
+                                <span><span class="label">回饋：</span>現折500元</span>
+                                <span><span class="label">限量：</span>10,000名（依交易順序）</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer">
+                <p>⚠️ 4月活動資訊待銀行官網公告後更新（通常於3月底~4月初出爐）</p>
+                <p>⚠️ 活動內容可能隨時變動，請以官方公告為準</p>
+                <p>資料更新日期：2026年4月1日</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function filterByMonth() {
+            const selectedMonth = document.getElementById('monthSelect').value;
+            
+            // 顯示/隱藏月份
+            document.querySelectorAll('.month-group').forEach(group => {
+                if (group.getAttribute('data-month') === selectedMonth) {
+                    group.classList.remove('hidden');
+                } else {
+                    group.classList.add('hidden');
+                }
+            });
+            
+            // 執行電商/銀行篩選
+            filterActivities();
+        }
+        
+        function filterActivities() {
+            const showShopee = document.getElementById('filter-shopee').checked;
+            const showMomo = document.getElementById('filter-momo').checked;
+            const showCoupang = document.getElementById('filter-coupang').checked;
+            const showEsun = document.getElementById('filter-esun').checked;
+            const showCathay = document.getElementById('filter-cathay').checked;
+
+            // 篩選電商平台
+            document.querySelectorAll('.platform').forEach(platform => {
+                const platformName = platform.getAttribute('data-platform');
+                if (platformName === 'shopee' && !showShopee) {
+                    platform.classList.add('hidden');
+                } else if (platformName === 'momo' && !showMomo) {
+                    platform.classList.add('hidden');
+                } else if (platformName === 'coupang' && !showCoupang) {
+                    platform.classList.add('hidden');
+                } else {
+                    platform.classList.remove('hidden');
+                }
+            });
+
+            // 篩選銀行
+            document.querySelectorAll('.bank-section').forEach(bank => {
+                const bankName = bank.getAttribute('data-bank');
+                if (bankName === 'esun' && !showEsun) {
+                    bank.classList.add('hidden');
+                } else if (bankName === 'cathay' && !showCathay) {
+                    bank.classList.add('hidden');
+                } else {
+                    bank.classList.remove('hidden');
+                }
+            });
+        }
+        
+        // 初始化
+        filterByMonth();
+    </script>
+</body>
+</html>
