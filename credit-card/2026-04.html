@@ -16,28 +16,32 @@
     .month-selector label { font-weight: 600; color: #333; }
     .month-selector select { padding: 10px 16px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1em; cursor: pointer; transition: border-color 0.3s; }
     .month-selector select:focus { outline: none; border-color: #667eea; }
-    .activity { border: 1px solid #e8e8e8; border-radius: 12px; padding: 20px; margin-bottom: 16px; transition: transform 0.2s, box-shadow 0.2s; }
+    .bank-group { margin-bottom: 28px; }
+    .bank-group:last-child { margin-bottom: 0; }
+    .bank-header { display: flex; align-items: center; gap: 10px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 14px 20px; border-radius: 12px; margin-bottom: 16px; font-size: 1.3em; font-weight: 700; }
+    .bank-header .count { background: rgba(255,255,255,0.25); padding: 2px 10px; border-radius: 20px; font-size: 0.75em; }
+    .platform-section { margin-left: 8px; }
+    .platform-header { display: flex; align-items: center; gap: 8px; color: #555; font-weight: 600; font-size: 1em; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #eee; }
+    .activity { border: 1px solid #e8e8e8; border-radius: 12px; padding: 18px; margin-bottom: 12px; transition: transform 0.2s, box-shadow 0.2s; }
     .activity:last-child { margin-bottom: 0; }
     .activity:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    .activity-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 12px; }
-    .activity-title { font-size: 1.2em; font-weight: 700; color: #222; flex: 1; }
-    .activity-bank { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.85em; font-weight: 600; white-space: nowrap; }
-    .activity-period { display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; color: #667eea; padding: 6px 12px; border-radius: 8px; font-size: 0.9em; margin-bottom: 12px; }
-    .activity-detail { color: #555; line-height: 1.6; margin-bottom: 12px; }
-    .activity-link { display: inline-flex; align-items: center; gap: 6px; background: #667eea; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: background 0.3s; }
+    .activity-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; gap: 12px; }
+    .activity-title { font-size: 1.1em; font-weight: 700; color: #222; flex: 1; }
+    .activity-period { display: inline-flex; align-items: center; gap: 6px; background: #f0f4ff; color: #667eea; padding: 5px 10px; border-radius: 8px; font-size: 0.85em; margin-bottom: 10px; }
+    .activity-detail { color: #555; line-height: 1.6; margin-bottom: 10px; font-size: 0.95em; }
+    .activity-link { display: inline-flex; align-items: center; gap: 6px; background: #667eea; color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9em; transition: background 0.3s; }
     .activity-link:hover { background: #5a6fd6; }
-    .platform-tag { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.85em; font-weight: 600; margin-right: 8px; margin-bottom: 8px; }
+    .platform-tag { display: inline-block; padding: 3px 8px; border-radius: 5px; font-size: 0.8em; font-weight: 600; margin-right: 6px; margin-bottom: 6px; }
     .platform-tag.shopee { background: #ff5722; color: white; }
     .platform-tag.momo { background: #ff9800; color: white; }
     .platform-tag.coupang { background: #4caf50; color: white; }
+    .exclusion-note { background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 0.85em; color: #856404; }
     .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 20px; }
     .stat-item { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 16px; border-radius: 12px; text-align: center; }
     .stat-value { font-size: 2em; font-weight: 700; }
     .stat-label { opacity: 0.9; font-size: 0.9em; }
-    .filter-note { background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 0.9em; color: #856404; }
-    .section-divider { color: #999; font-size: 0.8em; text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 12px; padding-bottom: 8px; border-bottom: 1px solid #eee; }
     footer { text-align: center; color: rgba(255,255,255,0.7); margin-top: 30px; font-size: 0.9em; }
-    @media (max-width: 600px) { .activity-header { flex-direction: column; } .activity-bank { align-self: flex-start; } }
+    @media (max-width: 600px) { .activity-header { flex-direction: column; } }
   </style>
 </head>
 <body>
@@ -62,56 +66,150 @@
           <div class="stat-item"><div class="stat-value">2</div><div class="stat-label">銀行數</div></div>
           <div class="stat-item"><div class="stat-value">3</div><div class="stat-label">平台數</div></div>
         </div>
-        <div class="filter-note">⚠️ 已過濾：僅保留2026年4月限定活動與當月有效檔期。跨月長期活動（如國泰蝦皮聯名卡1-6月加碼）已排除。</div>
-        <div id="activities">
-          <div class="section-divider">🦐 蝦皮購物</div>
-          <div class="activity">
-            <div class="activity-header"><div class="activity-title">蝦皮購物 4月狂購盛典</div><span class="activity-bank">國泰世華</span></div>
-            <div class="activity-period">📅 2026-04-05 ~ 2026-04-18</div>
-            <div class="activity-detail"><span class="platform-tag shopee">蝦皮</span><strong>單筆滿10,000贈500刷卡金</strong><br>分期滿25,000贈2,000刷卡金<br><em>限量1,000名，需於4/21 16:00前登錄</em></div>
-            <a class="activity-link" href="https://www.cathay-cube.com.tw/content/cub-aem-cs/zh-tw/cathaybk/personal/event/overview/credit-card/online-shopping/202604/shopee202604_2.html" target="_blank">查看詳情 →</a>
+        <div class="exclusion-note">⚠️ 已過濾：僅保留2026年4月限定活動。跨月長期活動（國泰蝦皮聯名卡1-6月加碼、外送交通旅遊7%）已排除。</div>
+
+        <!-- 🏦 國泰世華 -->
+        <div class="bank-group">
+          <div class="bank-header">🏦 國泰世華 <span class="count">4活動</span></div>
+
+          <div class="platform-section">
+            <div class="platform-header">🦐 蝦皮購物</div>
+
+            <div class="activity">
+              <div class="activity-header">
+                <div class="activity-title">蝦皮購物 4月狂購盛典</div>
+              </div>
+              <div class="activity-period">📅 2026-04-05 ~ 2026-04-18</div>
+              <div class="activity-detail">
+                <span class="platform-tag shopee">蝦皮</span>
+                <strong>單筆滿10,000贈500刷卡金或小樹點</strong><br>
+                分期滿25,000贈2,000刷卡金或小樹點（限3/6/24期）<br>
+                <em>限量1,000名，需於04/21 16:00至04/30 23:59登錄</em><br>
+                <strong>⚠️ 與蝦皮聯名卡4月加碼活動限擇優回饋乙次</strong>
+              </div>
+              <a class="activity-link" href="https://www.cathay-cube.com.tw/content/cub-aem-cs/zh-tw/cathaybk/personal/event/overview/credit-card/online-shopping/202604/shopee202604_2.html" target="_blank">查看詳情 →</a>
+            </div>
+
+            <div class="activity">
+              <div class="activity-header">
+                <div class="activity-title">蝦皮購物聯名卡站內消費滿額加碼</div>
+              </div>
+              <div class="activity-period">📅 2026-04-01 ~ 2026-04-30</div>
+              <div class="activity-detail">
+                <span class="platform-tag shopee">蝦皮</span>
+                <strong>聯名卡單筆消費滿6,500贈650蝦幣</strong><br>
+                <em>需於4/20 16:00至23:59登錄，限量1,500名</em><br>
+                <strong>⚠️ 與當月全卡友促刷活動限擇優回饋乙次</strong>
+              </div>
+              <a class="activity-link" href="https://www.cathay-cube.com.tw/content/cub-aem-cs/zh-tw/cathaybk/personal/event/overview/credit-card/online-shopping/202410/sp-permonth.html" target="_blank">查看詳情 →</a>
+            </div>
+
+            <div class="activity">
+              <div class="activity-header">
+                <div class="activity-title">蝦皮購物 4月購物嘉年華</div>
+              </div>
+              <div class="activity-period">📅 2026-04-01 ~ 2026-04-30</div>
+              <div class="activity-detail">
+                <span class="platform-tag shopee">蝦皮</span>
+                <strong>單筆滿5,000贈150刷卡金或小樹點</strong><br>
+                分期滿20,000贈1,200刷卡金或小樹點（限3/6/24期）<br>
+                <em>限量4,000名，需於04/27 16:00至04/30 23:59登錄</em><br>
+                刷CUBE信用卡玩數位享最高3.3%回饋(Level 3)<br>
+                <strong>⚠️ 與聯名卡4月加碼限擇優回饋乙次</strong>
+              </div>
+              <a class="activity-link" href="https://www.cathay-cube.com.tw/content/cub-aem-cs/zh-tw/cathaybk/personal/event/overview/credit-card/online-shopping/202604/shopee202604_1.html" target="_blank">查看詳情 →</a>
+            </div>
           </div>
-          <div class="activity">
-            <div class="activity-header"><div class="activity-title">蝦皮購物聯名卡站內消費滿額加碼</div><span class="activity-bank">國泰世華</span></div>
-            <div class="activity-period">📅 2026-04-01 ~ 2026-04-30</div>
-            <div class="activity-detail"><span class="platform-tag shopee">蝦皮</span><strong>聯名卡單筆滿6,500贈650蝦幣</strong><br><em>需4/20 16:00前登錄，限量1,500名</em></div>
-            <a class="activity-link" href="https://www.cathay-cube.com.tw/content/cub-aem-cs/zh-tw/cathaybk/personal/event/overview/credit-card/online-shopping/202410/sp-permonth.html" target="_blank">查看詳情 →</a>
-          </div>
-          <div class="activity">
-            <div class="activity-header"><div class="activity-title">蝦皮購物 4月購物嘉年華</div><span class="activity-bank">國泰世華</span></div>
-            <div class="activity-period">📅 2026-04-01 ~ 2026-04-30</div>
-            <div class="activity-detail"><span class="platform-tag shopee">蝦皮</span><strong>單筆滿5,000贈150刷卡金</strong><br>分期滿20,000贈1,200刷卡金<br><em>限量4,000名，需於4/27 16:00前登錄</em></div>
-            <a class="activity-link" href="https://www.cathay-cube.com.tw/content/cub-aem-cs/zh-tw/cathaybk/personal/event/overview/credit-card/online-shopping/202604/shopee202604_1.html" target="_blank">查看詳情 →</a>
-          </div>
-          <div class="activity">
-            <div class="activity-header"><div class="activity-title">蝦皮購物4月網購活動</div><span class="activity-bank">玉山</span></div>
-            <div class="activity-period">📅 2026-04-01 ~ 2026-04-30</div>
-            <div class="activity-detail"><span class="platform-tag shopee">蝦皮</span><strong>現折100（滿999）</strong><br>滿5,000享300刷卡金<br>Unicard最高26.5%回饋</div>
-            <a class="activity-link" href="https://www.esunbank.com/zh-tw/personal/credit-card/discount/shopInfo?sno=2100_04" target="_blank">查看詳情 →</a>
-          </div>
-          <div class="section-divider">🛒 momo購物網</div>
-          <div class="activity">
-            <div class="activity-header"><div class="activity-title">momo購物網 刷卡優惠</div><span class="activity-bank">國泰世華</span></div>
-            <div class="activity-period">📅 2026-04-01 ~ 2026-04-30</div>
-            <div class="activity-detail"><span class="platform-tag momo">momo</span><strong>單筆滿5,000贈100點小樹點</strong><br>分期滿20,000贈1,000點小樹點<br><em>限量4,000名，需於4/24 16:00前登錄</em></div>
-            <a class="activity-link" href="https://www.cathay-cube.com.tw/content/cub-aem-cs/zh-tw/cathaybk/personal/event/overview/credit-card/online-shopping/202604/momo202604_1.html" target="_blank">查看詳情 →</a>
-          </div>
-          <div class="activity">
-            <div class="activity-header"><div class="activity-title">momo購物4月網購活動</div><span class="activity-bank">玉山</span></div>
-            <div class="activity-period">📅 2026-04-01 ~ 2026-04-30</div>
-            <div class="activity-detail"><span class="platform-tag momo">momo</span><strong>滿6,000享5%刷卡金（上限500）</strong><br>Unicard最高22.8%回饋</div>
-            <a class="activity-link" href="https://www.esunbank.com/zh-tw/personal/credit-card/discount/shopInfo?sno=2008_04" target="_blank">查看詳情 →</a>
-          </div>
-          <div class="section-divider">🚀 酷澎 Coupang</div>
-          <div class="activity">
-            <div class="activity-header"><div class="activity-title">酷澎Coupang 4月網購活動</div><span class="activity-bank">玉山</span></div>
-            <div class="activity-period">📅 2026-04-01 ~ 2026-04-30</div>
-            <div class="activity-detail"><span class="platform-tag coupang">酷澎</span><strong>iPhone現折1,500</strong><br>3C滿20,000現折1,100<br>Unicard最高4.5%加碼</div>
-            <a class="activity-link" href="https://www.esunbank.com/zh-tw/personal/credit-card/discount/shopInfo?sno=2028_04" target="_blank">查看詳情 →</a>
+
+          <div class="platform-section" style="margin-top: 20px;">
+            <div class="platform-header">🛒 momo購物網</div>
+
+            <div class="activity">
+              <div class="activity-header">
+                <div class="activity-title">momo購物網 刷卡優惠</div>
+              </div>
+              <div class="activity-period">📅 2026-04-01 ~ 2026-04-30</div>
+              <div class="activity-detail">
+                <span class="platform-tag momo">momo</span>
+                <strong>單筆滿5,000贈100點小樹點(信用卡)</strong><br>
+                分期滿20,000贈1,000點小樹點(信用卡)<br>
+                <em>限量4,000名，需於4/24 16:00至2026/4/30 23:59登錄</em><br>
+                刷CUBE信用卡玩數位享最高3.3%回饋(Level 3)
+              </div>
+              <a class="activity-link" href="https://www.cathay-cube.com.tw/content/cub-aem-cs/zh-tw/cathaybk/personal/event/overview/credit-card/online-shopping/202604/momo202604_1.html" target="_blank">查看詳情 →</a>
+            </div>
           </div>
         </div>
+
+        <!-- 🏦 玉山銀行 -->
+        <div class="bank-group">
+          <div class="bank-header">🏦 玉山銀行 <span class="count">3活動</span></div>
+
+          <div class="platform-section">
+            <div class="platform-header">🦐 蝦皮購物</div>
+
+            <div class="activity">
+              <div class="activity-header">
+                <div class="activity-title">蝦皮購物4月網購活動</div>
+              </div>
+              <div class="activity-period">📅 2026-04-01 ~ 2026-04-30</div>
+              <div class="activity-detail">
+                <span class="platform-tag shopee">蝦皮</span>
+                <strong>【獨家】單筆滿999元現折100元（免領券，全月限量6,000名）</strong><br>
+                <strong>【活動一】單筆滿5,000元享300元刷卡金（一次付清或分期），限量2,000名，需於4/27 17:00~4/30 23:59登錄</strong><br>
+                <strong>【活動二】4.18購物節：分期滿12,000享700點e point；滿25,000享1,500點e point，需於4/21 17:00後登錄</strong><br>
+                <strong>【活動三】4.18領券：蝦皮商城滿2,000元88折(上限1,500)；全站滿2,000元9折(上限1,500)；95折(上限2,500)</strong><br>
+                <strong>【活動四】4.19~4/30：分期滿15,000享1,000點e point；滿30,000享2,000點e point，限量1,500名</strong><br>
+                <strong>【活動五】週五玉山日(4/3,4/10,4/17,4/24)：單筆滿2,000享100點e point，限量1,500名，需於4/22 17:00後登錄</strong><br>
+                Unicard UP選方案最高26.5%回饋
+              </div>
+              <a class="activity-link" href="https://www.esunbank.com/zh-tw/personal/credit-card/discount/shopInfo?sno=2100_04" target="_blank">查看詳情 →</a>
+            </div>
+          </div>
+
+          <div class="platform-section" style="margin-top: 20px;">
+            <div class="platform-header">🛒 momo購物網</div>
+
+            <div class="activity">
+              <div class="activity-header">
+                <div class="activity-title">momo購物4月網購活動</div>
+              </div>
+              <div class="activity-period">📅 2026-04-01 ~ 2026-04-30</div>
+              <div class="activity-detail">
+                <span class="platform-tag momo">momo</span>
+                <strong>【機車館限定】分期(限12/24期)滿60,000享6,500回饋(5,000刷卡金+1,500mo幣)，需於4/30 10:00登錄，限量120名</strong><br>
+                <strong>【活動一】全月：單筆滿6,000享5%刷卡金（上限500元），限量3,000名，需於4/16或4/28 17:00後登錄</strong><br>
+                <strong>【活動二】同樂購物節(4/1~4/14)：分期滿15,000享1,000點e point；滿30,000享2,000點e point，限量1,500名，需於4/17 17:00後登錄</strong><br>
+                <strong>【活動三】桃金日(4/15~4/30)：分期滿12,000享600點e point；滿24,000享1,500點e point，限量1,200名，需於4/29 17:00後登錄</strong><br>
+                Unicard最高享22.8%回饋
+              </div>
+              <a class="activity-link" href="https://www.esunbank.com/zh-tw/personal/credit-card/discount/shopInfo?sno=2008_04" target="_blank">查看詳情 →</a>
+            </div>
+          </div>
+
+          <div class="platform-section" style="margin-top: 20px;">
+            <div class="platform-header">🚀 酷澎 Coupang</div>
+
+            <div class="activity">
+              <div class="activity-header">
+                <div class="activity-title">酷澎Coupang 4月網購活動</div>
+              </div>
+              <div class="activity-period">📅 2026-04-01 ~ 2026-04-30</div>
+              <div class="activity-detail">
+                <span class="platform-tag coupang">酷澎</span>
+                <strong>【限量】WOW會員購買iPhone 17e享現折1,500元</strong><br>
+                <strong>【活動一】WOW會員購買指定3C單筆滿20,000現折1,100</strong><br>
+                <strong>【活動二】全月：累積消費滿2,500享100點e point；滿5,000享250點e point，限量1,500名，需於4/25 13:00~4/30登錄</strong><br>
+                <strong>【活動三】WOW會員購買奶粉類單筆滿2,000現折80元（每週一發券）</strong><br>
+                Unicard最高享4.5%加碼
+              </div>
+              <a class="activity-link" href="https://www.esunbank.com/zh-tw/personal/credit-card/discount/shopInfo?sno=2028_04" target="_blank">查看詳情 →</a>
+            </div>
+          </div>
+        </div>
+
       </div>
-      <div id="history-data" style="display:none;">{"history": [], "note": "2026-01、2026-02、2026-03 無歷史檔案"}</div>
+      <script type="application/json" id="history-data">{"history": [], "note": "2026-01、2026-02、2026-03 無歷史檔案"}</script>
     </div>
     <footer><p>資料整理：A2整理蝦 | 更新時間：2026-04-11</p></footer>
   </div>
